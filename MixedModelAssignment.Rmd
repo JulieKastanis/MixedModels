@@ -1,0 +1,92 @@
+---
+title: "Northern Lapwing Migration"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r library}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(emmeans)
+library(performance)
+library(ggplot2)
+library(see)
+library(patchwork)
+library(pbkrtest)
+```
+
+```{r read data}
+lapwing <- read_csv("lapwing.csv")
+```
+
+```{r asfactor}
+data$bird <- as.factor(lapwing$Bird)
+```
+
+```{r ggplot}
+p1<- ggplot(lapwing, aes(x=Year, y=Distance_Colony_AVG, group=Bird, color=Bird, shape=Bird)) + 
+  geom_point(size=4, position = position_dodge2(width=.33, preserve = "total")) +
+  scale_y_continuous() +
+  #geom_line() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Northern Lapwing Distance from Colony", x= "Year", y = "Average Distance from Colony")
+
+p1
+```
+
+```{r distance_means}
+distance_means <- lapwing %>%
+  group_by(Year) %>%
+  summarise(mean_Distance_Colony=mean(Distance_Colony_AVG),
+            se_rating=sd(Distance_Colony_AVG)/sqrt(n()))
+distance_means
+```
+
+
+```{r mixed_distances}
+mixed_year <- lmer(Distance_Colony_AVG~(Year*Bird)+(1|Bird), data = lapwing)
+```
+
+
+```{r anova_mixed_distance}
+anova(mixed_year)
+```
+
+```{r summary_mixed_year}
+summary(mixed_year)
+```
+
+```{r performance_check}
+performance::check_model(mixed_year)
+```
+
+```{r model-adjusted_means}
+#calculate model-adjusted means (e.g. estimated marginal means)
+mixed_year_emm <- emmeans(mixed_year, "Year")
+```
+
+```{r results of adjusted_means}
+mixed_year_emm
+```
+
+```{r emmeans_Bird}
+emmeans(mixed_year, "Bird")
+```
+
+```{r mixed_year_and_bird}
+emmeans(mixed_year, "Year", "Bird") 
+```
+
+#reverse the order of factors for alternative output
+
+
+```{r mixed_bird_and_year}
+emmeans(mixed_year, "Bird", "Year") 
+```
+
+#OK, so lets look at the raw means vs. model-adjusted means (esimated marginal means)
+
