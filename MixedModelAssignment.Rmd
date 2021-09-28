@@ -1,7 +1,7 @@
 <body style="background-color:lightgreen;">
 
 ---
-title: "Julie Kastanis: Mixed Models Assignment"
+title: "Julie K: Mixed Models Assignment"
 output: html_document
 ---
 
